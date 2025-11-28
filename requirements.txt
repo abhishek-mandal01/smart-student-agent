@@ -1,0 +1,26 @@
+# Core
+python-dotenv>=1.0.0
+pydantic>=1.10.10
+
+# LLM and tools
+openai>=1.0.0
+
+# PDF/text processing
+pypdf>=3.9.0
+tiktoken>=0.4.0
+
+# Embeddings & vectorstore
+faiss-cpu>=1.7.4
+sentence-transformers>=2.2.2
+
+# Utilities
+requests>=2.31.0
+
+# Web/UI
+streamlit>=1.25.0
+
+# Logging/metrics
+prometheus-client>=0.16.0
+
+# Optional
+langchain>=0.1.0
