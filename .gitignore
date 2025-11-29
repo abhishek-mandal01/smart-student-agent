@@ -1,2 +1,22 @@
 .venv/
 .env
+
+# Editor / OS
+.vscode/
+*.pyc
+__pycache__/
+.DS_Store
+
+# Local runtime / data
+tmp/
+vector_db/
+
+# Python virtualenv
+venv/
+
+# pytest
+.pytest_cache/
+
+# dotenv local overrides
+.env.local
+.env.*.local
