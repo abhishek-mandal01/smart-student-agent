@@ -27,7 +27,8 @@ def run_session(user_id: str, pdf_paths: list):
     # 3) summarize
     summary = summarize_chunks(all_chunks)
     # 4) quiz
-    quiz = generate_quiz(summary, n_questions=5)
+    # Request 10 questions for a fuller quiz
+    quiz = generate_quiz(summary, n_questions=10)
 
     # 5) update memory
     memory.write(user_id, {"last_summary": summary, "last_quiz": quiz})

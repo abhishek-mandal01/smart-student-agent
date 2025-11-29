@@ -1,66 +1,47 @@
-# src/llm.py
+import os
+from pathlib import Path
 import logging
-from typing import List
-from openai import OpenAI
-from .config import settings
 
-logger = logging.getLogger(__name__)
+import google.generativeai as genai
+from dotenv import load_dotenv
 
-# Create a client using openai>=1.0.0 interface
-# It will use the supplied API key (or rely on env var)
-_client = OpenAI(api_key=settings.OPENAI_API_KEY)
+# Load .env from project root if present, then prefer environment variables.
+ROOT = Path(__file__).resolve().parents[1]
+DOTENV_PATH = ROOT / ".env"
+if DOTENV_PATH.exists():
+    load_dotenv(dotenv_path=DOTENV_PATH)
+else:
+    # call load_dotenv() to allow environment-based loading if present elsewhere
+    load_dotenv()
+
+API_KEY = os.getenv("GOOGLE_API_KEY")
+if API_KEY:
+    genai.configure(api_key=API_KEY)
+else:
+    logging.warning(
+        "GOOGLE_API_KEY not found in environment or .env. Configure `genai` with a key for full functionality."
+    )
 
 class LLM:
-    def __init__(self, model: str = "gpt-4o-mini"):
-        self.model = model
-        self.client = _client
+    def __init__(self):
+        # Use a supported Gemini model; update here if your account has different model names
+        # Use the fully-qualified model id discovered by `scripts/list_models.py`
+        self.model = genai.GenerativeModel("models/gemini-2.5-pro")  # Chat + summarize
+    
+    def call(self, prompt):
+        response = self.model.generate_content(prompt)
+        return response.text
+    
+    def embed_texts(self, texts):
+        embeddings = []
+        for t in texts:
+            result = genai.embed_content(
+                model="models/text-embedding-004",
+                content=t
+            )
+            embeddings.append(result["embedding"])
+        return embeddings
 
-    def call(self, prompt: str, max_tokens: int = 512, temperature: float = 0.2) -> str:
-        """
-        Use the new OpenAI client chat completions API.
-        """
-        if not settings.OPENAI_API_KEY:
-            raise RuntimeError("OPENAI_API_KEY not set in environment (.env).")
 
-        logger.info("LLM.call model=%s prompt_len=%d", self.model, len(prompt))
-        resp = self.client.chat.completions.create(
-            model=self.model,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=max_tokens,
-            temperature=temperature,
-        )
-        # new API: response shape -> resp.choices[0].message.content
-        text = ""
-        try:
-            text = resp.choices[0].message.content.strip()
-        except Exception:
-            # fallback to other shapes
-            try:
-                text = resp.choices[0].text.strip()
-            except Exception:
-                logger.exception("Unable to parse LLM response structure.")
-                text = ""
-        return text
-
-    def embed_texts(self, texts: List[str]) -> List[List[float]]:
-        """
-        Use the new OpenAI embeddings API through the client.
-        Returns list of embeddings (list of floats) in same order as texts.
-        """
-        if not settings.OPENAI_API_KEY:
-            raise RuntimeError("OPENAI_API_KEY not set in environment (.env).")
-
-        # The OpenAI client returns an object with .data where each entry has .embedding
-        logger.info("Requesting embeddings for %d texts", len(texts))
-        if not texts:
-            return []
-
-        resp = self.client.embeddings.create(
-            model="text-embedding-3-small",  # more cost-effective; change if you want larger
-            input=texts,
-        )
-        embs = [d.embedding for d in resp.data]
-        return embs
-
-# single shared instance for imports
+# Module-level LLM instance for easy imports from other modules
 llm = LLM()

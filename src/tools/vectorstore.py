@@ -4,6 +4,7 @@ import faiss
 import numpy as np
 import pickle
 from typing import List, Tuple
+import logging
 
 class FaissVectorStore:
     def __init__(self, dim: int = None, path: str = "./vector_db"):
@@ -43,6 +44,23 @@ class FaissVectorStore:
         if self.index is None:
             dim = arr.shape[1]
             self._create_index(dim)
+        else:
+            # if an index exists, ensure its dim matches incoming vectors
+            try:
+                idx_dim = int(self.index.d)
+            except Exception:
+                idx_dim = None
+            vec_dim = arr.shape[1]
+            if idx_dim is not None and idx_dim != vec_dim:
+                logging.warning(
+                    "FAISS index dimension (%s) does not match incoming vector dim (%s). "
+                    "Recreating index with dim=%s (existing index contents will be discarded).",
+                    idx_dim,
+                    vec_dim,
+                    vec_dim,
+                )
+                # recreate empty index with new dim
+                self._create_index(vec_dim)
 
         # add vectors & metadata
         self.index.add(arr)
