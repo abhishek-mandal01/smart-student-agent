@@ -4,7 +4,7 @@ Lightweight demo assistant for studying: ingests lecture PDFs, summarizes conten
 
 **Quick summary:**
 - Python + Streamlit demo app
-- Uses OpenAI for LLM + embeddings
+- Uses Google Generative AI (Gemini) for LLM + embeddings
 - FAISS vector store for local similarity search
 - Simple in-memory `MemoryBank` for user session state (see `src/memory.py`)
 
@@ -29,13 +29,13 @@ pip install -r requirements.txt
 3. Add your secrets into a `.env` file at the project root (example provided):
 
 ```text
-OPENAI_API_KEY=sk-...your-key...
+GOOGLE_API_KEY=ya29....your-google-api-key...
 DEFAULT_USER_ID=user_1
 ```
 
 Notes:
 - The repository already contains a `.env` template and `.gitignore` ignores `.env` and `.venv`.
-- For production or CI, store `OPENAI_API_KEY` in your CI/host secrets rather than `.env`.
+- For production or CI, store `GOOGLE_API_KEY` in your CI/host secrets rather than `.env`.
 
 **Run (local demo)**
 - Launch the Streamlit app after activating the venv:
@@ -53,7 +53,7 @@ Or on Unix/macOS (if you prefer):
 **Files & structure**
 - `app.py` — Streamlit UI that wires together the agents.
 - `src/config.py` — Loads environment variables (via `python-dotenv`) and exposes `settings`.
-- `src/llm.py` — Small wrapper for OpenAI usage (chat & embeddings).
+- `src/llm.py` — Small wrapper for Google Generative AI (Gemini) usage (chat & embeddings).
 - `src/memory.py` — `MemoryBank` in-memory store (per-user dict with `_last_update`).
 - `src/agents/` — agent modules (`planner.py`, `summarizer.py`, `quiz_agent.py`).
 - `src/tools/` — helpers for PDF ingest and vector store (`pdf_ingest.py`, `vectorstore.py`).
@@ -67,7 +67,7 @@ Or on Unix/macOS (if you prefer):
 
 **Troubleshooting**
 - If your editor reports "import X could not be resolved", ensure the workspace Python interpreter is set to `./.venv/Scripts/python.exe` or restart the editor to pick up `.vscode/settings.json`.
-- If the app can't find `OPENAI_API_KEY`, ensure the `.env` file is present or the variable is set in your environment. `src/config.py` provides `require_openai_key()` to fail fast at startup.
+-- If the app can't find `GOOGLE_API_KEY`, ensure the `.env` file is present or the variable is set in your environment. `src/config.py` provides `require_openai_key()` to fail fast at startup.
 
 **License & contact**
 - All Rights reserved
